@@ -1,0 +1,88 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Note that some adapters may set a maximum length for the String type by default, please ensure your strings are long
+// enough when changing adapters.
+// See https://www.prisma.io/docs/orm/reference/prisma-schema-reference#string for more information
+datasource db {
+  provider = "sqlite"
+  url      = "file:dev.sqlite"
+}
+
+model Session {
+  id            String    @id
+  shop          String
+  state         String
+  isOnline      Boolean   @default(false)
+  scope         String?
+  expires       DateTime?
+  accessToken   String
+  userId        BigInt?
+  firstName     String?
+  lastName      String?
+  email         String?
+  accountOwner  Boolean   @default(false)
+  locale        String?
+  collaborator  Boolean?  @default(false)
+  emailVerified Boolean?  @default(false)
+  refreshToken        String?
+  refreshTokenExpires DateTime?
+}
+
+model users {
+  id               Int      @id @default(autoincrement())
+  shop             String   @unique
+  domain           String?
+  store_id         String?  @unique
+  email            String?
+  store_name       String?
+  store_owner      String?
+  currency         String?
+  country_name     String?
+  user_status      String
+  dev_preview      Boolean?
+  store_created_at DateTime?
+  created_at       DateTime @default(now())
+  last_login       DateTime @updatedAt
+
+  subscriptions    subscription[]
+}
+
+model app_uninstalled_stores {
+  id               Int      @id @default(autoincrement())
+  shop             String   @unique
+  domain           String?
+  store_id         String?
+  email            String?
+  store_name       String?
+  store_owner      String?
+  currency         String?
+  country_name     String?
+  user_status      String
+  dev_preview      Boolean?
+  store_created_at DateTime?
+  created_at       DateTime
+  last_login       DateTime
+  uninstalled_at   DateTime @default(now())
+}
+
+model subscription {
+  id                  Int       @id @default(autoincrement())
+  userId              Int
+  shop                String
+
+  subscription_id     String    @unique
+  plan_name            String
+  status              String
+  trial_days           Int?
+  is_test              Boolean  @default(false)
+  current_period_end   DateTime?
+  created_at           DateTime @default(now())
+  shopify_created_at   DateTime?
+  user users @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+}
