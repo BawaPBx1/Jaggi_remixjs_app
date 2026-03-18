@@ -6,6 +6,7 @@ import { BundleConfigCard } from "../components/discount/BundleConfigCard";
 import { AdvancedSettingsCard } from "../components/discount/AdvancedSettingsCard";
 import { useState } from "react";
 import { authenticate } from "../shopify.server";
+import { useNavigate } from "react-router";
 
 export async function loader({ request }) {
   const { admin, session } = await authenticate.admin(request);
@@ -17,14 +18,19 @@ export async function loader({ request }) {
 
 export default function CreateDiscount() {
   const [discountType, setDiscountType] = useState("tiered");
+  const navigate = useNavigate();
   
   return (
-    <Page title="Create discount"
-      primaryAction = {{
+    <Page 
+      title="Create discount"
+      primaryAction={{
         content: "Save discount",
         onAction: () => { }
       }}
-      secondaryActions={[{ content: "Cancel" }]}
+      secondaryActions={[{ 
+        content: "Cancel",
+        onAction: () => navigate("/app/discounts") 
+      }]}
     >
       <Layout>
         <Layout.Section>

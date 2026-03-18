@@ -1,4 +1,4 @@
-import { Card, TextField } from "@shopify/polaris";
+import { Card, TextField, BlockStack, Text } from "@shopify/polaris";
 import { useState } from "react";
 
 export function BundleConfigCard() {
@@ -6,21 +6,28 @@ export function BundleConfigCard() {
   const [price, setPrice] = useState("999");
 
   return (
-    <Card title="Bundle configuration" sectioned>
-      <TextField
-        label="Bundle quantity"
-        value={qty}
-        onChange={setQty}
-        autoComplete="off"
-      />
+    <Card>
+      <BlockStack gap="400">
+        <Text variant="headingMd" as="h2">
+          Bundle configuration
+        </Text>
+        <TextField
+          label="Bundle quantity"
+          value={qty}
+          onChange={setQty}
+          autoComplete="off"
+          type="number"
+        />
 
-      <TextField
-        label="Bundle price"
-        value={price}
-        prefix="$"
-        onChange={setPrice}
-        autoComplete="off"
-      />
+        <TextField
+          label="Bundle price"
+          value={price}
+          prefix="$"
+          onChange={setPrice}
+          autoComplete="off"
+          type="number"
+        />
+      </BlockStack>
     </Card>
   );
 }
