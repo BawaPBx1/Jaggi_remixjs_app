@@ -86,3 +86,52 @@ model subscription {
   user users @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@index([userId])
 }
+
+model Discount {
+  id                  String   @id @default(cuid())
+  shop                String
+
+  title               String
+  type                DiscountType
+  status              DiscountStatus @default(DRAFT)
+
+  shopifyDiscountId   String?  @unique
+
+  appliesToType       AppliesToType
+  appliesToIds        Json?
+
+  discountConfiguration       Json
+
+  startsAt            DateTime?
+  endsAt              DateTime?
+
+  combineWithOthers   Boolean  @default(false)
+  priority            Int      @default(0)
+
+  isEnabled           Boolean  @default(false)
+  isDeleted           Boolean  @default(false)
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([shop])
+  @@index([status])
+}
+
+enum DiscountType {
+  TIERED
+  BUNDLE
+}
+
+enum DiscountStatus {
+  DRAFT
+  ACTIVE
+  SCHEDULED
+  EXPIRED
+}
+
+enum AppliesToType {
+  ALL_PRODUCTS
+  PRODUCTS
+  COLLECTIONS
+}

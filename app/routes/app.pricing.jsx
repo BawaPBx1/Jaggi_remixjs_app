@@ -88,7 +88,7 @@ export default function PricingPage() {
       }, 0);
     }, [fetcher.data]);
 
-    const handleSubscribe = (planName) => {
+     const handleSubscribe = (planName) => {
     fetcher.submit(
       { plan_name: planName },
       {
