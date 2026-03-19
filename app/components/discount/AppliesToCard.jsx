@@ -1,9 +1,6 @@
-import { Card, ChoiceList, BlockStack, Text } from "@shopify/polaris";
-import { useState } from "react";
+import { Card, ChoiceList, BlockStack, Text, Button, InlineStack, Badge } from "@shopify/polaris";
 
-export function AppliesToCard() {
-  const [value, setValue] = useState("all");
-
+export function AppliesToCard({ selected, onSelect, selectedItems = [], onBrowse }) {
   return (
     <Card>
       <BlockStack gap="400">
@@ -16,9 +13,30 @@ export function AppliesToCard() {
             { label: "Specific products", value: "products" },
             { label: "Specific collections", value: "collections" },
           ]}
-          selected={[value]}
-          onChange={(val) => setValue(val[0])}
+          selected={[selected]}
+          onChange={(val) => onSelect(val[0])}
         />
+        {(selected === "products" || selected === "collections") && (
+          <BlockStack gap="200">
+             <InlineStack align="start">
+                <Button onClick={onBrowse}>
+                    Select {selected === "products" ? "products" : "collections"}
+                </Button>
+             </InlineStack>
+             
+             {selectedItems.length > 0 && (
+               <InlineStack gap="200">
+                  {selectedItems.slice(0, 5).map((item, index) => {
+                    const label = typeof item === 'string' ? item.split('/').pop() : (item.title || item.id);
+                    return <Badge key={item.id || index}>{label}</Badge>
+                  })}
+                  {selectedItems.length > 5 && (
+                    <Text variant="bodySm" tone="subdued">+{selectedItems.length - 5} more</Text>
+                  )}
+               </InlineStack>
+             )}
+          </BlockStack>
+        )}
       </BlockStack>
     </Card>
   );

@@ -11,91 +11,34 @@ import {
   Pagination,
 } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
+import prisma from "../db.server";
 
 import { useState, useCallback } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useLoaderData } from "react-router";
 
 export async function loader({ request }) {
   const { admin, session } = await authenticate.admin(request);
-  console.log("SESSION SHOP (INDEX):", session.shop);
-  return null;
+  
+  const discounts = await prisma.discount.findMany({
+    where: { shop: session.shop, isDeleted: false },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return { 
+    discounts: discounts.map(d => ({
+      ...d,
+      createdAt: new Date(d.createdAt).toLocaleDateString('en-US', {
+        month: 'short',
+        day: '2-digit',
+        year: 'numeric'
+      })
+    }))
+  };
 }
 
 export default function DiscountsPage() {
   const navigate = useNavigate();
-
-  const discounts = [
-    {
-      id: "1",
-      title: "Summer Tier Discount",
-      type: "Tiered",
-      status: "Active",
-      createdAt: "Mar 10, 2026",
-    },
-    {
-      id: "2",
-      title: "Buy 4 for $999",
-      type: "Bundle",
-      status: "Draft",
-      createdAt: "Mar 12, 2026",
-    },
-    {
-      id: "3",
-      title: "Winter Sale 15%",
-      type: "Tiered",
-      status: "Active",
-      createdAt: "Feb 02, 2026",
-    },
-    {
-      id: "4",
-      title: "Holiday Bundle Pack",
-      type: "Bundle",
-      status: "Active",
-      createdAt: "Dec 18, 2025",
-    },
-    {
-      id: "5",
-      title: "Black Friday Deal",
-      type: "Tiered",
-      status: "Draft",
-      createdAt: "Nov 20, 2025",
-    },
-    {
-      id: "6",
-      title: "Buy 3 Get Discount",
-      type: "Tiered",
-      status: "Active",
-      createdAt: "Jan 05, 2026",
-    },
-    {
-      id: "7",
-      title: "Starter Bundle Offer",
-      type: "Bundle",
-      status: "Draft",
-      createdAt: "Jan 15, 2026",
-    },
-    {
-      id: "8",
-      title: "VIP Customer Discount",
-      type: "Tiered",
-      status: "Active",
-      createdAt: "Mar 01, 2026",
-    },
-    {
-      id: "9",
-      title: "Weekend Flash Bundle",
-      type: "Bundle",
-      status: "Active",
-      createdAt: "Mar 14, 2026",
-    },
-    {
-      id: "10",
-      title: "Clearance Sale 25%",
-      type: "Tiered",
-      status: "Draft",
-      createdAt: "Feb 28, 2026",
-    },
-  ];
+  const { discounts } = useLoaderData();
 
   const resourceName = {
     singular: "discount",
@@ -104,7 +47,7 @@ export default function DiscountsPage() {
 
   const { selectedResources, allResourcesSelected, handleSelectionChange } =
     useIndexResourceState(discounts, {
-        resourceIDResolver: (discount) => discount.id,
+      resourceIDResolver: (discount) => discount.id,
     });
 
   const { mode, setMode } = useSetIndexFiltersMode();
@@ -175,7 +118,7 @@ export default function DiscountsPage() {
           onQueryClear={handleQueryClear}
           tabs={tabs}
           selected={0}
-          onSelect={() => {}}
+          onSelect={() => { }}
           sortOptions={sortOptions}
           sortSelected={sortSelected}
           onSort={setSortSelected}
@@ -191,57 +134,57 @@ export default function DiscountsPage() {
         ) : (
           <>
             <IndexTable
-                resourceName={resourceName}
-                itemCount={discounts.length}
-                selectedItemsCount={
-                    allResourcesSelected ? "All" : selectedResources.length
-                }
-                onSelectionChange={handleSelectionChange}
-                bulkActions={bulkActions}
-                headings={[
-                    { title: "Discount" },
-                    { title: "Type" },
-                    { title: "Status" },
-                    { title: "Created" },
-                ]}
+              resourceName={resourceName}
+              itemCount={discounts.length}
+              selectedItemsCount={
+                allResourcesSelected ? "All" : selectedResources.length
+              }
+              onSelectionChange={handleSelectionChange}
+              bulkActions={bulkActions}
+              headings={[
+                { title: "Discount" },
+                { title: "Type" },
+                { title: "Status" },
+                { title: "Created" },
+              ]}
+            >
+              {discounts.map((discount, index) => (
+                <IndexTable.Row
+                  id={discount.id}
+                  key={discount.id}
+                  position={index}
+                  selected={selectedResources.includes(discount.id)}
+                  onClick={() => navigate(`/app/discounts/${discount.id}`)}
                 >
-                {discounts.map((discount, index) => (
-                    <IndexTable.Row
-                    id={discount.id}
-                    key={discount.id}
-                    position={index}
-                    selected={selectedResources.includes(discount.id)}
-                    onClick={() => navigate(`/app/discounts/${discount.id}`)}
-                    >
-                    <IndexTable.Cell>
-                        <Text variant="bodyMd" fontWeight="semibold">
-                        {discount.title}
-                        </Text>
-                    </IndexTable.Cell>
+                  <IndexTable.Cell>
+                    <Text variant="bodyMd" fontWeight="semibold">
+                      {discount.title}
+                    </Text>
+                  </IndexTable.Cell>
 
-                    <IndexTable.Cell>
-                        <Badge tone="info">{discount.type}</Badge>
-                    </IndexTable.Cell>
+                  <IndexTable.Cell>
+                    <Badge tone="info">{discount.type.charAt(0) + discount.type.slice(1).toLowerCase()}</Badge>
+                  </IndexTable.Cell>
 
-                    <IndexTable.Cell>
-                        <Badge tone={discount.status === "Active" ? "success" : "attention"}>
-                        {discount.status}
-                        </Badge>
-                    </IndexTable.Cell>
+                  <IndexTable.Cell>
+                    <Badge tone={discount.status === "ACTIVE" ? "success" : "attention"}>
+                      {discount.status === "ACTIVE" ? "Active" : "Draft"}
+                    </Badge>
+                  </IndexTable.Cell>
 
-                    <IndexTable.Cell>
-                        <Text variant="bodySm">{discount.createdAt}</Text>
-                    </IndexTable.Cell>
-                    </IndexTable.Row>
-                ))}
-                </IndexTable>
+                  <IndexTable.Cell>
+                    <Text variant="bodySm">{discount.createdAt}</Text>
+                  </IndexTable.Cell>
+                </IndexTable.Row>
+              ))}
+            </IndexTable>
 
             <div style={{ padding: "16px" }}>
               <Pagination
                 hasPrevious={false}
-                hasNext={true}
-                onPrevious={() => {}}
-                onNext={() => {}}
+                hasNext={false}
+                onPrevious={() => { }}
+                onNext={() => { }}
               />
             </div>
           </>

@@ -1,12 +1,16 @@
 import { Card, TextField, InlineStack, Button, BlockStack, Text } from "@shopify/polaris";
-import { useState } from "react";
 
-export function TieredConfigCard() {
-  const [tiers, setTiers] = useState([
-    { qty: "1", discount: "10" },
-    { qty: "2", discount: "15" },
-    { qty: "3", discount: "20" },
-  ]);
+export function TieredConfigCard({ tiers, onTiersChange }) {
+  const updateTier = (index, field, val) => {
+    const updated = [...tiers];
+    updated[index][field] = val;
+    onTiersChange(updated);
+  };
+
+  const removeTier = (index) => {
+    const updated = tiers.filter((_, i) => i !== index);
+    onTiersChange(updated);
+  };
 
   return (
     <Card>
@@ -17,28 +21,44 @@ export function TieredConfigCard() {
         <BlockStack gap="200">
           {tiers.map((tier, index) => (
             <InlineStack gap="400" key={index} align="start">
-              <TextField
-                label="Minimum quantity"
-                labelHidden
-                placeholder="Quantity"
-                value={tier.qty}
-                autoComplete="off"
-                type="number"
-              />
-              <TextField
-                label="Discount (%)"
-                labelHidden
-                placeholder="Discount %"
-                value={tier.discount}
-                suffix="%"
-                autoComplete="off"
-                type="number"
-              />
+              <div style={{ flex: 1 }}>
+                <TextField
+                  label="Minimum quantity"
+                  labelHidden
+                  placeholder="Quantity"
+                  value={tier.qty}
+                  onChange={(val) => updateTier(index, "qty", val)}
+                  autoComplete="off"
+                  type="number"
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <TextField
+                  label="Discount (%)"
+                  labelHidden
+                  placeholder="Discount %"
+                  value={tier.discount}
+                  onChange={(val) => updateTier(index, "discount", val)}
+                  suffix="%"
+                  autoComplete="off"
+                  type="number"
+                />
+              </div>
+              {tiers.length > 1 && (
+                <Button 
+                  onClick={() => removeTier(index)} 
+                  variant="plain" 
+                  tone="critical"
+                  ariaLabel="Remove tier"
+                >
+                  Remove
+                </Button>
+              )}
             </InlineStack>
           ))}
         </BlockStack>
         <InlineStack align="start">
-          <Button onClick={() => setTiers([...tiers, { qty: "", discount: "" }])}>
+          <Button onClick={() => onTiersChange([...tiers, { qty: "", discount: "" }])}>
             Add tier
           </Button>
         </InlineStack>
